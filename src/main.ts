@@ -12,30 +12,28 @@ logger.info('Starting Holiday Converter...');
 
 type ExportHoliday = HolidaysTypes.Holiday & { country: string };
 
-const allHolidays: ExportHoliday[] = [];
-
 async function ensureOutputDirectory() {
     await fs.mkdir(OUTPUT_PATH, {recursive: true}).catch(err => {
         throw new Error('Error creating output directory: ' + err);
     });
 }
 
-function fetchHolidaysForCountry(country: string) {
+function fetchHolidaysForCountry(country: string): ExportHoliday[] {
     const hd = new Holidays(country, {types: TYPES});
     const holidays = hd.getHolidays(YEAR) as ExportHoliday[];
     if (holidays.length === 0) {
         logger.warn('No holidays found for ' + country);
-        return;
+        return [];
     }
 
     holidays.forEach(holiday => {
         holiday.country = country;
     });
-    allHolidays.push(...holidays);
     logger.info(`Fetched ${holidays.length} holidays for ${country}`);
+    return holidays;
 }
 
-async function writeHolidaysToFile() {
+async function writeHolidaysToFile(allHolidays: ExportHoliday[]) {
     const fileName = `holidays-${YEAR}.json`;
     const filePath = path.join(OUTPUT_PATH, fileName);
     await fs.writeFile(filePath, JSON.stringify(allHolidays, null, 2)).catch(err => {
@@ -46,8 +44,7 @@ async function writeHolidaysToFile() {
 
 async function main() {
     await ensureOutputDirectory();
-    COUNTRIES.map(fetchHolidaysForCountry);
-    await writeHolidaysToFile();
+    await writeHolidaysToFile(COUNTRIES.flatMap(fetchHolidaysForCountry));
 }
 
 main().catch(error => logger.error('Unexpected error:', error));
