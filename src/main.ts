@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'node:path';
 
 const YEAR = 2024;
-const COUNTRIES: string[] = ['DE', 'PT'];
+const COUNTRIES: string[] = Object.keys(new Holidays().getCountries());
 const TYPES: HolidaysTypes.HolidayType[] = ['public'];
 const OUTPUT_PATH = 'output';
 
