@@ -5,13 +5,10 @@ import path from 'node:path';
 
 const YEAR = 2024;
 const COUNTRIES: string[] = ['DE', 'PT'];
+const TYPES: HolidaysTypes.HolidayType[] = ['public'];
 const OUTPUT_PATH = 'output';
 
 logger.info('Starting Holiday Converter...');
-
-const options: HolidaysTypes.Options = {
-    types: ['public'],
-};
 
 type ExportHoliday = HolidaysTypes.Holiday & { country: string };
 
@@ -24,7 +21,7 @@ async function ensureOutputDirectory() {
 }
 
 function fetchHolidaysForCountry(country: string) {
-    const hd = new Holidays(country, options);
+    const hd = new Holidays(country, {types: TYPES});
     const holidays = hd.getHolidays(YEAR) as ExportHoliday[];
     if (holidays.length === 0) {
         logger.warn('No holidays found for ' + country);
