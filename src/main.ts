@@ -1,9 +1,13 @@
-import { default as Holidays } from 'date-holidays';
+import {default as Holidays, HolidaysTypes} from 'date-holidays';
 import logger from './logger.js';
 
 logger.info('Starting Holiday Converter...');
 
-const hd = new Holidays('DE');
+const options: HolidaysTypes.Options = {
+    types: ['public'],
+}
+
+const hd = new Holidays('DE', options);
 
 try {
     const holidays = hd.getHolidays(2024);
