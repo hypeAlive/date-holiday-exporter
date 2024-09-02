@@ -1,6 +1,6 @@
-import { default as Holidays, HolidaysTypes } from 'date-holidays';
+import {default as Holidays, HolidaysTypes} from 'date-holidays';
 import logger from './logger.js';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'node:path';
 
 const YEAR = 2024;
@@ -17,31 +17,40 @@ type ExportHoliday = HolidaysTypes.Holiday & { country: string };
 
 const allHolidays: ExportHoliday[] = [];
 
-if (!fs.existsSync(OUTPUT_PATH)) {
-    fs.mkdirSync(OUTPUT_PATH, { recursive: true });
-    logger.info('Output directory created: ' + OUTPUT_PATH);
+async function ensureOutputDirectory() {
+    await fs.mkdir(OUTPUT_PATH, {recursive: true}).catch(err => {
+        throw new Error('Error creating output directory: ' + err);
+    });
 }
 
-COUNTRIES.forEach(country => {
+function fetchHolidaysForCountry(country: string) {
     const hd = new Holidays(country, options);
-
-    try {
-        const holidays = hd.getHolidays(YEAR) as ExportHoliday[];
-        if (holidays.length === 0) {
-            logger.warn('No holidays found for ' + country);
-        } else {
-            holidays.forEach(holiday => {
-                holiday.country = country;
-            });
-            allHolidays.push(...holidays);
-        }
-    } catch (error) {
-        logger.error('Error fetching holidays for ' + country + ':', error);
+    const holidays = hd.getHolidays(YEAR) as ExportHoliday[];
+    if (holidays.length === 0) {
+        logger.warn('No holidays found for ' + country);
+        return;
     }
-});
 
-const fileName = `holidays-${YEAR}.json`;
-const filePath = path.join(OUTPUT_PATH, fileName);
+    holidays.forEach(holiday => {
+        holiday.country = country;
+    });
+    allHolidays.push(...holidays);
+    logger.info(`Fetched ${holidays.length} holidays for ${country}`);
+}
 
-fs.writeFileSync(filePath, JSON.stringify(allHolidays, null, 2));
-logger.info('All holidays written to file ' + fileName);
+async function writeHolidaysToFile() {
+    const fileName = `holidays-${YEAR}.json`;
+    const filePath = path.join(OUTPUT_PATH, fileName);
+    await fs.writeFile(filePath, JSON.stringify(allHolidays, null, 2)).catch(err => {
+        throw new Error('Error writing file: ' + err);
+    });
+    logger.info(`Successfully wrote ${allHolidays.length} holidays to ${filePath}`);
+}
+
+async function main() {
+    await ensureOutputDirectory();
+    COUNTRIES.map(fetchHolidaysForCountry);
+    await writeHolidaysToFile();
+}
+
+main().catch(error => logger.error('Unexpected error:', error));
