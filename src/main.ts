@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'node:path';
 
 const YEAR = 2024;
+const COUNTRIES: string[] = ['DE', 'PT'];
 const OUTPUT_PATH = 'output';
 
 logger.info('Starting Holiday Converter...');
@@ -11,8 +12,6 @@ logger.info('Starting Holiday Converter...');
 const options: HolidaysTypes.Options = {
     types: ['public'],
 };
-
-const COUNTRIES: string[] = ['DE', 'PT'];
 
 type ExportHoliday = HolidaysTypes.Holiday & { country: string };
 
