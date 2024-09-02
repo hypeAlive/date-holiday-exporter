@@ -27,7 +27,7 @@ function fetchHolidaysForCountry(country: string): ExportHoliday[] {
     }
 
     holidays.forEach(holiday => {
-        holiday.country = country;
+        holiday.country = hd.getCountries(country)[country];
     });
     logger.info(`Fetched ${holidays.length} holidays for ${country}`);
     return holidays;
