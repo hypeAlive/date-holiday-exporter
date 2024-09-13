@@ -17,6 +17,9 @@ type ExportHoliday = HolidaysTypes.Holiday & {
     countryName: string
 };
 
+/**
+ * Builder class for creating instances of HolidayExporter.
+ */
 class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
 
     private readonly exporter: HolidayExporter
@@ -25,35 +28,75 @@ class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
         this.exporter = new HolidayExporter();
     }
 
+    /**
+     * Builds and returns the HolidayExporter instance.
+     * @returns {HolidayExporter} The built HolidayExporter instance.
+     */
     build(): HolidayExporter {
         return this.exporter;
     }
 
+    /**
+     * Sets the file name for the export.
+     * Default ist "holidays.json" when exporting multiple years, otherwise "holidays-<year>.json".
+     * @param {string} name - The file name.
+     * @returns {this} The current builder instance.
+     */
     setFileName(name: string): this {
         this.anyExporter.fileName = name;
         return this;
     }
 
+    /**
+     * Sets the output path for the export.
+     * Default is "output".
+     * @param {string} path - The output path. Without "/" at beginning and end
+     * @returns {this} The current builder instance.
+     */
     setOutputPath(path: string): this {
         this.anyExporter.outputPath = path;
         return this;
     }
 
+    /**
+     * Sets the years for which holidays should be exported.
+     * Default is the current year.
+     * @param {number[]} years - The years to set.
+     * @returns {this} The current builder instance.
+     */
     setYears(...years: number[]): this {
         this.anyExporter.years = years;
         return this;
     }
 
+    /**
+     * Sets the types of holidays to be exported.
+     * Default is public holidays.
+     * @param {HolidaysTypes.HolidayType[]} types - The holiday types to set.
+     * @returns {this} The current builder instance.
+     */
     setTypes(...types: HolidaysTypes.HolidayType[]): this {
         this.anyExporter.types = types;
         return this;
     }
 
+    /**
+     * Sets the countries for which holidays should be exported.
+     * Default is all countries.
+     * @param {string[]} countries - The countries to set.
+     * @returns {this} The current builder instance.
+     */
     setCountries(...countries: string[]): this {
         this.anyExporter.countries = countries;
         return this;
     }
 
+    /**
+     * Modifies the JSON output of the holidays. This can be used to filter or modify the output.
+     * Default is to return the holiday as is.
+     * @param {(json: ExportHoliday) => object} modifier - The modifier function.
+     * @returns {this} The current builder instance.
+     */
     modifyJson(modifier: (json: ExportHoliday) => object): this {
         this.anyExporter.jsonModifier = modifier;
         return this;
@@ -65,6 +108,9 @@ class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
 
 }
 
+/**
+ * Class for exporting holidays.
+ */
 export class HolidayExporter {
 
     private years: number[] = [new Date().getFullYear()];
@@ -74,10 +120,19 @@ export class HolidayExporter {
     private jsonModifier: (json: ExportHoliday) => object = json => json;
     private fileName: string | null = null;
 
+    /**
+     * Used to create a new instance of the HolidayExporter via the builder.
+     * When not using the builder, only default configuration can be exported.
+     * @returns {HolidayExportBuilder} The builder instance.
+     */
     static create(): HolidayExportBuilder {
         return new HolidayExportBuilder();
     }
 
+    /**
+     * Exports the holidays with the given configuration.
+     * @throws {Error} If an error occurs during export.
+     */
     async export() {
         await this.ensureOutputDirectory();
 
