@@ -17,7 +17,7 @@ type ExportHoliday = HolidaysTypes.Holiday & {
     countryName: string
 };
 
-export class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
+class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
 
     private readonly exporter: HolidayExporter
 
@@ -77,7 +77,6 @@ export class HolidayExporter {
     static create(): HolidayExportBuilder {
         return new HolidayExportBuilder();
     }
-
 
     async export() {
         await this.ensureOutputDirectory();
