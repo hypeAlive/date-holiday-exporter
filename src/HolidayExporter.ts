@@ -39,10 +39,14 @@ class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
     /**
      * Sets the file name for the export.
      * Default ist "holidays.json" when exporting multiple years, otherwise "holidays-<year>.json".
-     * @param {string} name - The file name.
+     * @param {string} name - The file name without extension ".json".
      * @returns {this} The current builder instance.
+     * @throws {Error} If the file name does end with ".json".
      */
     setFileName(name: string): this {
+        if(name.endsWith('.json'))
+            throw new Error('File name can not end with extension ".json"');
+
         this.anyExporter.fileName = name;
         return this;
     }
