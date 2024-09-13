@@ -5,7 +5,7 @@ logger.info('Starting Holiday Converter...');
 
 const exporter = HolidayExporter.create()
     .setFileName('holidays')
-    .setYears(2021, 2022)
+    .setYears(2022, 2023, 2024, 2025, 2026)
     .modifyJson((holiday) => {
         return {
             date: holiday.date.split(' ')[0],
