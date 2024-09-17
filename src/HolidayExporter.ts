@@ -2,6 +2,8 @@ import {default as Holidays, HolidaysTypes} from "date-holidays";
 import fs from "fs/promises";
 import logger from "./logger.js";
 import path from "node:path";
+//@ts-ignore
+import {Parser} from "json2csv";
 
 interface Builder<A> {
     build(): A;
@@ -59,6 +61,11 @@ class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
      */
     setOutputPath(path: string): this {
         this.anyExporter.outputPath = path;
+        return this;
+    }
+
+    outputAsCSV(): this {
+        this.anyExporter.outputAsCSV = true;
         return this;
     }
 
@@ -123,6 +130,7 @@ export class HolidayExporter {
     private outputPath: string = 'output';
     private jsonModifier: (json: ExportHoliday) => object = json => json;
     private fileName: string | null = null;
+    private outputAsCSV: boolean = false;
 
     /**
      * Used to create a new instance of the HolidayExporter via the builder.
@@ -148,7 +156,10 @@ export class HolidayExporter {
            result.push(...holidays.map(this.jsonModifier));
         });
 
-        await this.writeHolidaysToFile(result);
+        if(this.outputAsCSV)
+            await this.writeHolidaysToCSV(result);
+        else
+            await this.writeHolidaysToFile(result);
 
     }
 
@@ -186,6 +197,17 @@ export class HolidayExporter {
         const fileName = this.fileName ? `${this.fileName}.json` : this.years.length === 1 ? `holidays-${this.years[0]}.json` : 'holidays.json';
         const filePath = path.join(this.outputPath, fileName);
         await fs.writeFile(filePath, JSON.stringify(allHolidays, null, 2)).catch(err => {
+            throw new Error('Error writing file: ' + err);
+        });
+        logger.info(`Successfully wrote ${allHolidays.length} holidays to ${filePath}`);
+    }
+
+    private async writeHolidaysToCSV(allHolidays: any[]) {
+        const parser = new Parser();
+        const csv = parser.parse(allHolidays);
+        const fileName = this.fileName ? `${this.fileName}.csv` : this.years.length === 1 ? `holidays-${this.years[0]}.csv` : 'holidays.csv';
+        const filePath = path.join(this.outputPath, fileName);
+        await fs.writeFile(filePath, csv).catch(err => {
             throw new Error('Error writing file: ' + err);
         });
         logger.info(`Successfully wrote ${allHolidays.length} holidays to ${filePath}`);
