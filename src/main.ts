@@ -1,6 +1,5 @@
 import logger from './logger.js';
 import {HolidayExporter} from "./HolidayExporter.js";
-import {HolidaysTypes} from "date-holidays";
 
 logger.info('Starting Holiday Converter...');
 
