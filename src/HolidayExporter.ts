@@ -159,7 +159,7 @@ export class HolidayExporter {
         if(this.outputAsCSV)
             await this.writeHolidaysToCSV(result);
         else
-            await this.writeHolidaysToFile(result);
+            await this.writeHolidaysToJson(result);
 
     }
 
@@ -193,7 +193,7 @@ export class HolidayExporter {
         });
     }
 
-    private async writeHolidaysToFile(allHolidays: any[]) {
+    private async writeHolidaysToJson(allHolidays: any[]) {
         const fileName = this.fileName ? `${this.fileName}.json` : this.years.length === 1 ? `holidays-${this.years[0]}.json` : 'holidays.json';
         const filePath = path.join(this.outputPath, fileName);
         await fs.writeFile(filePath, JSON.stringify(allHolidays, null, 2)).catch(err => {
