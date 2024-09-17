@@ -9,6 +9,7 @@ const exporter = HolidayExporter.create()
     .modifyJson((holiday) => {
         const modifiedHoliday = {
             ...holiday,
+            date: holiday.date.split(' ')[0],
             country: holiday.countryCode,
             countryCode: undefined,
             countryName: undefined,
@@ -28,6 +29,7 @@ const exporter = HolidayExporter.create()
         return modifiedHoliday;
     })
     .outputAsCSV()
+    .deactivateTimezone()
     .build();
 
 await exporter.export();

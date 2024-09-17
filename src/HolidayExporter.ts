@@ -102,6 +102,11 @@ class HolidayExportBuilder implements ExportBuilder<HolidayExporter> {
         return this;
     }
 
+    deactivateTimezone(): this {
+        this.anyExporter.deactivateTimezone = true;
+        return this;
+    }
+
     /**
      * Modifies the JSON output of the holidays. This can be used to filter or modify the output.
      * Default is to return the holiday as is.
@@ -131,6 +136,7 @@ export class HolidayExporter {
     private jsonModifier: (json: ExportHoliday) => object = json => json;
     private fileName: string | null = null;
     private outputAsCSV: boolean = false;
+    private deactivateTimezone: boolean = false;
 
     /**
      * Used to create a new instance of the HolidayExporter via the builder.
@@ -151,7 +157,10 @@ export class HolidayExporter {
         const result: any[] = [];
 
         this.countries.forEach(country => {
-           const holidays = this.fetchHolidaysForCountry(country);
+           let holidays = this.fetchHolidaysForCountry(country);
+
+           if(this.deactivateTimezone)
+                holidays = this.deleteTimezones(holidays);
 
            result.push(...holidays.map(this.jsonModifier));
         });
@@ -161,6 +170,13 @@ export class HolidayExporter {
         else
             await this.writeHolidaysToJson(result);
 
+    }
+
+    deleteTimezones(holidays: ExportHoliday[]): ExportHoliday[] {
+        return holidays.map(holiday => {
+            holiday.date = holiday.date.replace(/ -\d{4}$/, '');
+            return holiday;
+        });
     }
 
     private fetchHolidaysForCountry(country: string): ExportHoliday[] {
@@ -203,7 +219,7 @@ export class HolidayExporter {
     }
 
     private async writeHolidaysToCSV(allHolidays: any[]) {
-        const parser = new Parser();
+        const parser = new Parser({delimiter: ';'});
         const csv = parser.parse(allHolidays);
         const fileName = this.fileName ? `${this.fileName}.csv` : this.years.length === 1 ? `holidays-${this.years[0]}.csv` : 'holidays.csv';
         const filePath = path.join(this.outputPath, fileName);
